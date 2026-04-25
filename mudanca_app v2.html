@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mudança 📦</title>
+
+<!-- PWA / iOS meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mudança">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a3c5e">
+
+<!-- Inline SVG icon as data URI for iOS home screen -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMWEzYzVlIi8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+TpjwvdGV4dD48L3N2Zz4=">
+
+<!-- Inline manifest via JS (no separate file needed) -->
+<script>
+// Register inline service worker for offline support
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'mudanca-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+// Inline manifest
+const manifest = {
+  name: 'Mudança — Triagem',
+  short_name: 'Mudança',
+  start_url: window.location.href,
+  display: 'standalone',
+  background_color: '#f7f4ef',
+  theme_color: '#1a3c5e',
+  icons: [{
+    src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMWEzYzVlIi8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+TpjwvdGV4dD48L3N2Zz4=",
+    sizes: "180x180", type: "image/svg+xml"
+  }]
+};
+const mBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+const mUrl = URL.createObjectURL(mBlob);
+const mLink = document.createElement('link');
+mLink.rel = 'manifest'; mLink.href = mUrl;
+document.head.appendChild(mLink);
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f7f4ef;
+  --navy: #1a3c5e;
+  --levar: #2d6a4f;     --levar-bg: #e8f5ee;
+  --doar: #c8531a;      --doar-bg: #fdf0e8;
+  --vender: #7c4dbd;    --vender-bg: #f3eeff;
+  --descartar: #888;    --descartar-bg: #f0f0f0;
+  --border: #e8e2d9;
+  --text: #1a1a1a;
+  --muted: #999;
+  --orange: #f5a623;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--text);
+  height: 100%; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* ── INSTALL BANNER ── */
+#install-banner {
+  background: var(--orange); color: #1a1a1a;
+  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  font-size: 0.78rem; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  line-height: 1.3;
+}
+#install-banner button {
+  margin-left: auto; background: var(--navy); color: white;
+  border: none; border-radius: 6px; padding: 5px 10px;
+  font-size: 0.72rem; font-weight: 700; font-family: 'Syne', sans-serif;
+  cursor: pointer; white-space: nowrap;
+}
+#install-banner.hidden { display: none; }
+
+/* ── TAB BAR ── */
+.tab-bar {
+  display: flex; background: var(--navy); flex-shrink: 0;
+  padding-top: var(--safe-top);
+}
+.tab-btn {
+  flex: 1; padding: 13px 6px; border: none; background: none;
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  color: rgba(255,255,255,0.45); cursor: pointer;
+  border-bottom: 3px solid transparent; transition: all 0.2s;
+  letter-spacing: 0.2px;
+}
+.tab-btn.active { color: #fff; border-bottom-color: var(--orange); }
+
+/* ── TRIAGEM HEADER ── */
+.triagem-header {
+  background: var(--navy); color: white;
+  padding: 11px 16px 13px; flex-shrink: 0;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.18);
+}
+.header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.header-row h1 { font-family: 'Syne', sans-serif; font-size: 1.0rem; font-weight: 800; }
+.header-row p  { font-size: 0.65rem; opacity: 0.55; margin-top: 1px; }
+.progress-wrap { background: rgba(255,255,255,0.15); border-radius: 20px; height: 5px; margin-bottom: 8px; }
+.progress-bar  { height: 100%; background: var(--orange); border-radius: 20px; transition: width 0.4s; width: 0%; }
+.mini-stats { display: flex; gap: 5px; flex-wrap: wrap; }
+.mini-stat  {
+  display: flex; align-items: center; gap: 3px;
+  background: rgba(255,255,255,0.12); padding: 3px 7px;
+  border-radius: 20px; font-size: 0.65rem;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot.levar { background: #4caf7d; } .dot.doar { background: #f08050; }
+.dot.vender { background: #b07de0; } .dot.descartar { background: #aaa; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  padding: 9px 12px; background: white; border-bottom: 1px solid var(--border);
+  display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0;
+}
+.search-input {
+  flex: 1; min-width: 120px; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 7px 10px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; outline: none;
+  background: var(--bg);
+}
+.search-input:focus { border-color: var(--navy); background: #fff; }
+.filter-btn {
+  border: 1.5px solid var(--border); background: white; border-radius: 8px;
+  padding: 5px 9px; font-size: 0.75rem; cursor: pointer; color: var(--muted);
+  transition: all 0.15s; white-space: nowrap; font-family: 'DM Sans', sans-serif;
+}
+.filter-btn.fa { border-color: var(--navy); background: #eef3f8; color: var(--navy); }
+.filter-btn.fl { border-color: var(--levar); background: var(--levar-bg); color: var(--levar); }
+.filter-btn.fd { border-color: var(--doar); background: var(--doar-bg); color: var(--doar); }
+.filter-btn.fv { border-color: var(--vender); background: var(--vender-bg); color: var(--vender); }
+.filter-btn.fx { border-color: var(--descartar); background: var(--descartar-bg); color: var(--descartar); }
+.filter-btn.fp { border-color: var(--orange); background: #fff8e8; color: #b07700; }
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll-area {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-bot) + 20px);
+}
+
+/* ── ITEM LIST ── */
+.list-wrap { padding: 12px; }
+.room-section { margin-bottom: 14px; }
+.room-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; background: var(--navy); border-radius: 10px 10px 0 0;
+}
+.room-name { font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px; flex: 1; }
+.room-badge { background: rgba(255,255,255,0.2); color: white; font-size: 0.62rem; padding: 2px 7px; border-radius: 20px; }
+.item-card {
+  background: white; border-left: 4px solid transparent; border-bottom: 1px solid var(--border);
+  padding: 10px 10px; display: flex; align-items: center; gap: 8px;
+  transition: background 0.15s, border-color 0.2s; min-height: 52px;
+}
+.item-card:last-child { border-radius: 0 0 10px 10px; border-bottom: none; }
+.item-card.status-levar    { border-left-color: var(--levar);    background: var(--levar-bg); }
+.item-card.status-doar     { border-left-color: var(--doar);     background: var(--doar-bg); }
+.item-card.status-vender   { border-left-color: var(--vender);   background: var(--vender-bg); }
+.item-card.status-descartar{ border-left-color: var(--descartar);background: var(--descartar-bg); }
+.item-card.hidden { display: none; }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 0.83rem; font-weight: 500; line-height: 1.3; }
+.item-obs  { font-size: 0.67rem; color: var(--muted); margin-top: 1px; font-style: italic; }
+.status-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.sbtn {
+  width: 34px; height: 34px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: white; font-size: 0.9rem; cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; opacity: 0.35;
+}
+.sbtn.active { opacity: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.sbtn.levar    { border-color: var(--levar);    background: var(--levar-bg); }
+.sbtn.doar     { border-color: var(--doar);     background: var(--doar-bg); }
+.sbtn.vender   { border-color: var(--vender);   background: var(--vender-bg); }
+.sbtn.descartar{ border-color: var(--descartar);background: var(--descartar-bg); }
+
+/* ── MATERIAIS ── */
+.mat-wrap { padding: 14px; padding-bottom: calc(var(--safe-bot) + 30px); }
+.mat-hero {
+  background: var(--navy); border-radius: 14px; padding: 16px; margin-bottom: 14px; color: white;
+}
+.mat-hero h2 { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 800; margin-bottom: 3px; }
+.mat-hero p  { font-size: 0.72rem; opacity: 0.7; line-height: 1.4; }
+.mat-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-bottom: 14px; }
+.msc {
+  background: white; border-radius: 12px; padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 3px solid var(--navy);
+}
+.msc.levar { border-top-color: var(--levar); }
+.msc.vender{ border-top-color: var(--vender); }
+.msc.doar  { border-top-color: var(--doar); }
+.msc.desc  { border-top-color: var(--descartar); }
+.msc .num  { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.msc .lbl  { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+.msc.levar .num  { color: var(--levar); }
+.msc.vender .num { color: var(--vender); }
+.msc.doar .num   { color: var(--doar); }
+.msc.desc .num   { color: var(--descartar); }
+.mat-section { background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.mat-section h3 { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.mat-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.mat-item:last-child { border-bottom: none; padding-bottom: 0; }
+.mi-left .name   { font-size: 0.82rem; font-weight: 500; }
+.mi-left .detail { font-size: 0.68rem; color: var(--muted); margin-top: 1px; line-height: 1.3; }
+.mi-right { text-align: right; flex-shrink: 0; }
+.mi-right .qty  { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--orange); line-height: 1; }
+.mi-right .unit { font-size: 0.62rem; color: var(--muted); }
+.mat-total { display: flex; justify-content: space-between; align-items: center; background: var(--navy); color: white; border-radius: 10px; padding: 11px 13px; margin-top: 10px; }
+.mat-total .tl { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; }
+.mat-total .tv { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--orange); }
+.tip-box { background: #fff8e8; border: 1px solid #f5d87a; border-radius: 12px; padding: 11px 13px; font-size: 0.75rem; line-height: 1.5; color: #7a5a00; margin-bottom: 12px; }
+.tip-box strong { display: block; margin-bottom: 2px; font-size: 0.78rem; }
+.pending-notice { background: #fff8e8; border-radius: 10px; padding: 9px 12px; font-size: 0.72rem; color: #b07700; text-align: center; margin-bottom: 10px; }
+
+
+
+
+/* ── EDIT / ADD / DELETE ── */
+.room-header { cursor: default; }
+.btn-add-item {
+  width: 100%; padding: 9px; background: var(--bg);
+  border: 1.5px dashed var(--border); border-top: none;
+  border-radius: 0 0 10px 10px; color: var(--navy);
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 6px; transition: background 0.15s;
+}
+.btn-add-item:hover { background: #eef3f8; }
+.item-actions { display: flex; gap: 3px; flex-shrink: 0; margin-left: 2px; }
+.act-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  font-size: 0.78rem; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; opacity: 0.55; transition: opacity 0.15s, transform 0.1s;
+  background: var(--bg);
+}
+.act-btn:hover { opacity: 1; transform: scale(1.1); }
+.act-btn.edit-btn    { color: var(--navy); }
+.act-btn.delete-btn  { color: var(--doar); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 500;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: white; border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(var(--safe-bot) + 24px);
+  width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto;
+}
+.modal-sheet h2 {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
+  color: var(--navy); margin-bottom: 16px;
+}
+.modal-field { margin-bottom: 12px; }
+.modal-field label {
+  display: block; font-size: 0.68rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;
+}
+.modal-field input, .modal-field select {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; color: var(--text); background: var(--bg);
+}
+.modal-field input:focus, .modal-field select:focus {
+  border-color: var(--navy); background: white;
+}
+.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+.btn-modal-confirm {
+  flex: 1; background: var(--navy); color: white; border: none;
+  border-radius: 10px; padding: 13px; font-family: 'Syne', sans-serif;
+  font-size: 0.85rem; font-weight: 700; cursor: pointer;
+}
+.btn-modal-confirm.danger { background: var(--doar); }
+.btn-modal-cancel {
+  background: var(--bg); color: var(--text); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 13px 16px; font-family: 'Syne', sans-serif;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+}
+.room-add-section { margin-bottom: 20px; }
+.room-add-section h4 {
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.btn-add-room {
+  width: 100%; padding: 10px; border: 1.5px dashed var(--border);
+  border-radius: 10px; background: var(--bg); color: var(--navy);
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-add-room:hover { background: #eef3f8; }
+
+/* ── CUSTOM BOX CALCULATOR ── */
+.box-calc-section {
+  background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 2px solid var(--orange);
+}
+.box-calc-section h3 { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.box-calc-section .subtitle { font-size: 0.7rem; color: var(--muted); margin-bottom: 12px; }
+.box-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-end; }
+.box-field { flex: 1; }
+.box-field label { display: block; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; font-weight: 600; }
+.box-field input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif;
+  outline: none; background: var(--bg); text-align: center; font-weight: 600;
+}
+.box-field input:focus { border-color: var(--orange); background: white; }
+.box-field .unit-hint { font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 2px; }
+.box-name-field { flex: 2; }
+.box-name-field input { text-align: left; }
+.btn-add-box {
+  background: var(--orange); color: #1a1a1a; border: none; border-radius: 8px;
+  padding: 10px 14px; font-family: 'Syne', sans-serif; font-size: 0.78rem;
+  font-weight: 700; cursor: pointer; white-space: nowrap; margin-top: 8px;
+  width: 100%;
+}
+.custom-boxes-list { margin-top: 12px; }
+.custom-box-card {
+  background: var(--bg); border-radius: 10px; padding: 10px 12px;
+  margin-bottom: 8px; border: 1px solid var(--border);
+}
+.custom-box-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.custom-box-name { font-weight: 700; font-size: 0.85rem; flex: 1; }
+.custom-box-dims { font-size: 0.7rem; color: var(--muted); }
+.btn-remove-box { background: none; border: none; color: var(--descartar); cursor: pointer; font-size: 1rem; padding: 2px; }
+.custom-box-result {
+  display: flex; justify-content: space-between; align-items: center;
+  background: white; border-radius: 8px; padding: 8px 10px;
+  border: 1px solid var(--border);
+}
+.custom-box-result .label { font-size: 0.78rem; color: var(--text); }
+.custom-box-result .count { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--orange); }
+.custom-box-result .count-unit { font-size: 0.62rem; color: var(--muted); }
+.cbox-vol-note { font-size: 0.65rem; color: var(--muted); margin-top: 4px; }
+.no-custom-boxes { text-align: center; color: var(--muted); font-size: 0.78rem; padding: 12px 0; font-style: italic; }
+
+/* ── PRINT PAGE ── */
+.rel-wrap { padding: 14px; padding-bottom: calc(var(--safe-bot) + 30px); }
+.rel-hero { background: var(--navy); border-radius: 14px; padding: 16px; margin-bottom: 14px; color: white; }
+.rel-hero h2 { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 800; margin-bottom: 3px; }
+.rel-hero p  { font-size: 0.72rem; opacity: 0.7; }
+.btn-print {
+  display: block; width: 100%; padding: 14px;
+  background: var(--navy); color: white; border: none; border-radius: 12px;
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 800;
+  cursor: pointer; margin-bottom: 10px; letter-spacing: 0.3px;
+}
+.btn-print.orange { background: var(--orange); color: #1a1a1a; }
+.rel-section { background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.rel-section h3 { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+.rel-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+.rel-item:last-child { border-bottom: none; }
+.rel-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+.rel-badge.levar    { background: var(--levar-bg);    color: var(--levar); }
+.rel-badge.doar     { background: var(--doar-bg);     color: var(--doar); }
+.rel-badge.vender   { background: var(--vender-bg);   color: var(--vender); }
+.rel-badge.descartar{ background: var(--descartar-bg);color: var(--descartar); }
+.rel-mat-item { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+.rel-mat-item:last-child { border-bottom: none; }
+.rel-mat-qty { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--orange); }
+.rel-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.rel-stat { background: white; border-radius: 10px; padding: 10px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.rel-stat .n { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.rel-stat .l { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+.rel-stat.levar .n    { color: var(--levar); }
+.rel-stat.doar .n     { color: var(--doar); }
+.rel-stat.vender .n   { color: var(--vender); }
+.rel-stat.descartar .n{ color: var(--descartar); }
+.rel-total { background: var(--navy); color: white; border-radius: 10px; padding: 11px 13px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.rel-total .tl { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; }
+.rel-total .tv { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--orange); }
+
+@media print {
+  #install-banner, .tab-bar { display: none !important; }
+  body { overflow: visible !important; height: auto !important; }
+  #page-triagem, #page-materiais { display: none !important; }
+  #page-relatorio { display: flex !important; overflow: visible !important; }
+  .scroll-area { overflow: visible !important; }
+  .btn-print { display: none !important; }
+  .rel-wrap { padding: 0 !important; }
+}
+
+/* ── PAGE WRAPPER ── */
+#page-triagem, #page-materiais { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+#page-materiais { display: none; }
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER (shown on first open in Safari) -->
+<div id="install-banner">
+  <span>📲 Para usar como app: toque em <strong>Compartilhar</strong> → <strong>"Adicionar à Tela de Início"</strong></span>
+  <button onclick="document.getElementById('install-banner').classList.add('hidden')">OK</button>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-triagem"   onclick="showTab('triagem')">🏠 Triagem</button>
+  <button class="tab-btn"        id="tab-materiais" onclick="showTab('materiais')">📦 Materiais</button>
+  <button class="tab-btn"        id="tab-relatorio"  onclick="showTab('relatorio')">🖨️ PDF</button>
+</div>
+
+<!-- ══ TRIAGEM PAGE ══ -->
+<div id="page-triagem">
+  <div class="triagem-header">
+    <div class="header-row">
+      <div><h1>Triagem de Mudança</h1><p>Toque para marcar cada item</p></div>
+      <div style="text-align:right;padding-left:8px">
+        <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--orange);line-height:1" id="pct-num">0%</div>
+        <div style="font-size:0.6rem;opacity:0.5">concluído</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="dot levar"></div><span id="cnt-levar">0</span> levar</div>
+      <div class="mini-stat"><div class="dot doar"></div><span id="cnt-doar">0</span> doação</div>
+      <div class="mini-stat"><div class="dot vender"></div><span id="cnt-vender">0</span> vender</div>
+      <div class="mini-stat"><div class="dot descartar"></div><span id="cnt-descartar">0</span> descartar</div>
+      <div class="mini-stat" style="background:rgba(255,255,255,0.07)"><span id="cnt-pendente" style="opacity:0.55">0 pendentes</span></div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <input class="search-input" type="search" placeholder="🔍 Buscar item..." oninput="filterItems()" id="search-input" autocomplete="off" autocorrect="off">
+    <button class="filter-btn fa" id="f-all"      onclick="setFilter('all')">Todos</button>
+    <button class="filter-btn"   id="f-pendente"  onclick="setFilter('pendente')">⏳</button>
+    <button class="filter-btn"   id="f-levar"     onclick="setFilter('levar')">✅</button>
+    <button class="filter-btn"   id="f-doar"      onclick="setFilter('doar')">🎁</button>
+    <button class="filter-btn"   id="f-vender"    onclick="setFilter('vender')">💰</button>
+    <button class="filter-btn"   id="f-descartar" onclick="setFilter('descartar')">🗑️</button>
+  </div>
+  <div class="scroll-area"><div class="list-wrap" id="main-content"></div></div>
+</div>
+
+<!-- ══ MATERIAIS PAGE ══ -->
+<div id="page-materiais">
+  <div class="scroll-area"><div class="mat-wrap">
+
+    <div class="mat-hero">
+      <h2>📦 Materiais Necessários</h2>
+      <p>Calculado em tempo real com base nos itens marcados como <strong>LEVAR</strong>. Complete a triagem para resultado final.</p>
+    </div>
+
+    <div id="pending-notice" class="pending-notice" style="display:none">
+      ⏳ Ainda há itens não decididos — o cálculo vai ajustar conforme você terminar a triagem.
+    </div>
+
+    <div class="mat-summary">
+      <div class="msc levar"> <div class="num" id="m-levar">0</div> <div class="lbl">indo junto</div></div>
+      <div class="msc vender"><div class="num" id="m-vender">0</div><div class="lbl">para vender</div></div>
+      <div class="msc doar">  <div class="num" id="m-doar">0</div>  <div class="lbl">para doação</div></div>
+      <div class="msc desc">  <div class="num" id="m-descartar">0</div><div class="lbl">descartados</div></div>
+    </div>
+
+    <!-- CAIXAS PADRÃO -->
+    <div class="mat-section">
+      <h3>📦 Estimativa por Tamanho de Caixa</h3>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Caixa Pequena <span style="font-weight:400;font-size:0.72rem;color:var(--muted)">(30×25×25 cm)</span></div><div class="detail">Livros, utensílios, eletrônicos pequenos, frágeis embrulhados</div></div>
+        <div class="mi-right"><div class="qty" id="box-s">—</div><div class="unit">unidades</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Caixa Média <span style="font-weight:400;font-size:0.72rem;color:var(--muted)">(50×35×35 cm)</span></div><div class="detail">Panelas, roupas dobradas, eletros médios, plantas</div></div>
+        <div class="mi-right"><div class="qty" id="box-m">—</div><div class="unit">unidades</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Caixa Grande <span style="font-weight:400;font-size:0.72rem;color:var(--muted)">(60×40×40 cm)</span></div><div class="detail">Roupas de cama, travesseiros, itens volumosos e leves</div></div>
+        <div class="mi-right"><div class="qty" id="box-l">—</div><div class="unit">unidades</div></div>
+      </div>
+      <div class="mat-total">
+        <span class="tl">Total padrão (+20% segurança)</span>
+        <span class="tv" id="box-total">—</span>
+      </div>
+    </div>
+
+    <!-- CALCULADORA DE CAIXA PERSONALIZADA -->
+    <div class="box-calc-section">
+      <h3>📐 Sua Caixa Personalizada</h3>
+      <p class="subtitle">Digite as dimensões da caixa que você tem — o app calcula quantas vai precisar com base no volume total estimado.</p>
+
+      <div class="box-row">
+        <div class="box-field box-name-field">
+          <label>Nome da caixa</label>
+          <input type="text" id="cbox-name" placeholder="Ex: Caixa do mercado" maxlength="30">
+        </div>
+      </div>
+      <div class="box-row">
+        <div class="box-field">
+          <label>Comprimento</label>
+          <input type="number" id="cbox-c" placeholder="50" min="1" max="200" oninput="previewCustomBox()">
+          <div class="unit-hint">cm</div>
+        </div>
+        <div class="box-field">
+          <label>Largura</label>
+          <input type="number" id="cbox-l" placeholder="35" min="1" max="200" oninput="previewCustomBox()">
+          <div class="unit-hint">cm</div>
+        </div>
+        <div class="box-field">
+          <label>Altura</label>
+          <input type="number" id="cbox-a" placeholder="35" min="1" max="200" oninput="previewCustomBox()">
+          <div class="unit-hint">cm</div>
+        </div>
+      </div>
+
+      <div id="cbox-preview" style="display:none; background:#fff8e8; border-radius:8px; padding:8px 10px; margin-bottom:8px; font-size:0.75rem; color:#7a5a00;">
+        Volume: <strong id="cbox-vol-preview">—</strong> litros &nbsp;·&nbsp; Precisará de approx. <strong id="cbox-qty-preview">—</strong> unidades
+      </div>
+
+      <button class="btn-add-box" onclick="addCustomBox()">+ Adicionar esta caixa ao cálculo</button>
+
+      <div class="custom-boxes-list" id="custom-boxes-list">
+        <div class="no-custom-boxes" id="no-custom-msg">Nenhuma caixa adicionada ainda</div>
+      </div>
+    </div>
+
+    <div class="mat-section">
+      <h3>🫧 Proteção</h3>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Papel Bolha</div><div class="detail">Copos, vidros, espelhos, quadros, TVs, eletrodomésticos</div></div>
+        <div class="mi-right"><div class="qty" id="bolha">—</div><div class="unit">rolos 50m</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Papel Kraft / Jornal</div><div class="detail">Enchimento de caixas, embrulho de panelas e utensílios</div></div>
+        <div class="mi-right"><div class="qty" id="kraft">—</div><div class="unit">pacotes</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Plástico Stretch (filme)</div><div class="detail">Gavetas abertas, sofá, colchão, armários grandes</div></div>
+        <div class="mi-right"><div class="qty" id="stretch">—</div><div class="unit">rolos</div></div>
+      </div>
+    </div>
+
+    <div class="mat-section">
+      <h3>🖊️ Fixação e Identificação</h3>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Fita Adesiva Larga (48mm)</div><div class="detail">Fechar e reforçar fundo e tampa das caixas</div></div>
+        <div class="mi-right"><div class="qty" id="fita">—</div><div class="unit">rolos</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Caneta Permanente</div><div class="detail">Identificar caixas: cômodo + conteúdo</div></div>
+        <div class="mi-right"><div class="qty">2</div><div class="unit">unidades</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Fita Colorida por Cômodo</div><div class="detail">1 cor por ambiente — facilita o desempacotamento</div></div>
+        <div class="mi-right"><div class="qty" id="fita-cor">—</div><div class="unit">cores</div></div>
+      </div>
+    </div>
+
+    <div class="mat-section">
+      <h3>🛋️ Proteção de Móveis Grandes</h3>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Capa para Colchão</div><div class="detail">Protege da sujeira e umidade no transporte</div></div>
+        <div class="mi-right"><div class="qty" id="capa-colchao">—</div><div class="unit">unidades</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Manta Acolchoada / Cobertor Velho</div><div class="detail">Proteger sofá, guarda-roupa, espelho e TVs no caminhão</div></div>
+        <div class="mi-right"><div class="qty" id="manta">—</div><div class="unit">peças</div></div>
+      </div>
+      <div class="mat-item">
+        <div class="mi-left"><div class="name">Bag / Saco de Lona Grande</div><div class="detail">Roupas e têxteis — mais rápido que caixas</div></div>
+        <div class="mi-right"><div class="qty" id="bag">—</div><div class="unit">unidades</div></div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>🛒 Onde comprar mais barato</strong>
+      Lojas de embalagem têm preços bem menores que papelaria. Papel bolha e stretch saem mais baratos em rolos grandes no atacado. Caixas usadas: peça em supermercados ou busque no Mercado Livre.
+    </div>
+
+  </div></div>
+</div>
+
+<script>
+// ── HIDE INSTALL BANNER IF ALREADY INSTALLED ──
+if (window.navigator.standalone) {
+  document.getElementById('install-banner').classList.add('hidden');
+}
+
+// ── DATA ──
+const ROOMS = [
+  { name: "Sala de Estar", items: [
+    { name: "Sofá retrátil cinza", obs: "2 lugares", cat: "movel_grande" },
+    { name: "Rack de madeira caramelo", obs: "Com gavetas deslizantes", cat: "movel_grande" },
+    { name: "TV Philips grande", obs: "Tela plana", cat: "eletro_grande" },
+    { name: "Mesa lateral pequena", obs: "Madeira escura", cat: "movel_pequeno" },
+    { name: "Aparelho de som retrô vermelho", obs: "", cat: "eletro_pequeno" },
+    { name: "Aparador de madeira decorativo", obs: "Com caminho colorido", cat: "movel_grande" },
+    { name: "Quadro/pintura na parede", obs: "", cat: "fragil" },
+    { name: "Quadro no aparador", obs: "", cat: "fragil" },
+    { name: "Máscaras decorativas", obs: "", cat: "fragil" },
+    { name: "Vasos decorativos", obs: "", cat: "fragil" },
+  ]},
+  { name: "Sala de Jantar", items: [
+    { name: "Mesa redonda tampo de vidro", obs: "", cat: "movel_grande" },
+    { name: "Cadeira rattan/palha 1", obs: "Assento estofado bege", cat: "movel_medio" },
+    { name: "Cadeira rattan/palha 2", obs: "Assento estofado bege", cat: "movel_medio" },
+    { name: "Cadeira rattan/palha 3", obs: "Assento estofado bege", cat: "movel_medio" },
+    { name: "Cadeira rattan/palha 4", obs: "Assento estofado bege", cat: "movel_medio" },
+  ]},
+  { name: "Plantas e Estantes", items: [
+    { name: "Estante metálica 2 andares", obs: "Ferro dourado/bronze", cat: "movel_medio" },
+    { name: "Estante de madeira 3 andares", obs: "Para plantas", cat: "movel_medio" },
+    { name: "Vasos com plantas (~10 unid.)", obs: "Variados", cat: "fragil" },
+  ]},
+  { name: "Quarto Principal — Móveis", items: [
+    { name: "Cama de casal com box", obs: "", cat: "movel_grande" },
+    { name: "Criado-mudo madeira escura", obs: "3 gavetas, puxadores antigos", cat: "movel_medio" },
+    { name: "Cômoda branca 3 gavetas", obs: "TV em cima", cat: "movel_grande" },
+    { name: "TV Samsung", obs: "Tela plana/curva", cat: "eletro_grande" },
+    { name: "Guarda-roupa branco 3 portas", obs: "Com espelho central", cat: "movel_grande" },
+  ]},
+  { name: "Quarto Principal — Roupas Armário", items: [
+    { name: "Camisas sociais penduradas", obs: "~10 unid.", cat: "roupa" },
+    { name: "Casacos/jaquetas pendurados", obs: "Inclui jaqueta cinza impermeável", cat: "roupa" },
+    { name: "Calças penduradas", obs: "Verde, bege, vinho e outras", cat: "roupa" },
+    { name: "Cobertores/mantas prateleira alta", obs: "Inclui manta crochê vermelha", cat: "textil" },
+    { name: "Toalhas prateleira alta", obs: "Azul, cinza, bege", cat: "textil" },
+    { name: "Chapéu de palha", obs: "", cat: "acessorio" },
+    { name: "Gaveta 1 — camisetas azul/petróleo/cinza/preto", obs: "", cat: "roupa" },
+    { name: "Gaveta 2 — camisetas verde/cinza/branca/vermelha", obs: "", cat: "roupa" },
+    { name: "Gaveta 3 — calças + cintos", obs: "Jeans cinza, verde militar + 3 cintos", cat: "roupa" },
+    { name: "Gaveta 4 — roupa de cama", obs: "Fronhas, lençóis listrados e floridos", cat: "textil" },
+  ]},
+  { name: "Quarto Principal — Cômoda", items: [
+    { name: "Gaveta cômoda 1 — calças/shorts", obs: "Jeans cinza, verde, bermuda estampada", cat: "roupa" },
+    { name: "Gaveta cômoda 2 — camisetas", obs: "Vermelho, bege, rosa, outros", cat: "roupa" },
+    { name: "Gaveta cômoda 3 — meias e acessórios", obs: "Meias, bola de tênis, cintos", cat: "acessorio" },
+  ]},
+  { name: "Quarto Principal — Outros", items: [
+    { name: "Espelho de corpo inteiro", obs: "Moldura escura", cat: "fragil" },
+    { name: "4 quadros pop art na parede", obs: "Músicos, estilo stencil", cat: "fragil" },
+    { name: "Ventilador de mesa Britânia preto", obs: "", cat: "eletro_pequeno" },
+    { name: "Extensão elétrica (régua)", obs: "", cat: "eletro_pequeno" },
+  ]},
+  { name: "Quarto / Escritório", items: [
+    { name: "Mesa de trabalho", obs: "Com toalha estampada rosa/cinza", cat: "movel_grande" },
+    { name: "Cadeira preta", obs: "", cat: "movel_medio" },
+    { name: "Guitarra / Violão", obs: "", cat: "fragil" },
+    { name: "Quadro branco (whiteboard)", obs: "", cat: "movel_medio" },
+    { name: "Livros (acervo)", obs: "~30-40 livros, vários gêneros", cat: "livros" },
+    { name: "Documentos e pastas", obs: "Caixa de documentos, pasta azul", cat: "papel" },
+    { name: "Caixas diversas / organizadores", obs: "", cat: "utensilio" },
+    { name: "Foam roller preto", obs: "Para exercício", cat: "utensilio" },
+    { name: "Roupas na prateleira", obs: "Camisetas verde-limão, cinza, preto", cat: "roupa" },
+  ]},
+  { name: "Cozinha — Móveis e Eletros", items: [
+    { name: "Fogão Consul 4 bocas com forno", obs: "", cat: "eletro_grande" },
+    { name: "Geladeira Consul 1 porta", obs: "Frost free", cat: "eletro_grande" },
+    { name: "Micro-ondas Electrolux", obs: "", cat: "eletro_grande" },
+    { name: "Balcão tampo preto", obs: "Com armário branco e rodízios", cat: "movel_grande" },
+    { name: "Filtro de barro grande", obs: "", cat: "fragil" },
+    { name: "Cafeteira Walita/Philips preta", obs: "", cat: "eletro_pequeno" },
+    { name: "Cafeteira Philco vermelha", obs: "", cat: "eletro_pequeno" },
+    { name: "Air fryer preta", obs: "", cat: "eletro_pequeno" },
+    { name: "Ferro de passar roupa", obs: "", cat: "eletro_pequeno" },
+    { name: "Processador/aspirador preto", obs: "", cat: "eletro_pequeno" },
+  ]},
+  { name: "Cozinha — Utensílios", items: [
+    { name: "Panela grande alumínio com tampa", obs: "", cat: "panela" },
+    { name: "Panela média com tampa", obs: "", cat: "panela" },
+    { name: "Frigideira vermelha antiaderente", obs: "", cat: "panela" },
+    { name: "Frigideira preta", obs: "", cat: "panela" },
+    { name: "Assadeira alumínio retangular", obs: "", cat: "panela" },
+    { name: "Panelinha pequena com tampa", obs: "", cat: "panela" },
+    { name: "Pilão de madeira", obs: "", cat: "utensilio" },
+    { name: "Porta-utensílios preto", obs: "Facas, colheres, fouet, espátulas", cat: "utensilio" },
+    { name: "Espátula vermelha de silicone", obs: "", cat: "utensilio" },
+    { name: "Tigela/bacia amarela ou verde", obs: "", cat: "utensilio" },
+    { name: "Escorredor plástico azul", obs: "", cat: "utensilio" },
+    { name: "Jarra plástica grande (dispenser)", obs: "", cat: "utensilio" },
+    { name: "Potes de vidro variados", obs: "Com tampas coloridas", cat: "fragil" },
+    { name: "Copos de vidro (~6-8 unid.)", obs: "", cat: "fragil" },
+    { name: "Caixa plástica com tampa laranja", obs: "", cat: "utensilio" },
+    { name: "Recipiente vidro retangular (pirex)", obs: "", cat: "fragil" },
+    { name: "Tigelas coloridas empilhadas", obs: "Vinho e verde", cat: "utensilio" },
+    { name: "Xícaras e canecas diversas", obs: "", cat: "fragil" },
+  ]},
+  { name: "Área de Serviço", items: [
+    { name: "Armário branco alto 2 portas", obs: "Com chave", cat: "movel_grande" },
+    { name: "Armário marrom alto 2 portas", obs: "Estilo madeira", cat: "movel_grande" },
+    { name: "Máquina de lavar", obs: "", cat: "eletro_grande" },
+    { name: "Prateleira preta aberta", obs: "Para roupas", cat: "movel_medio" },
+    { name: "Prateleiras brancas modulares", obs: "Sistema trilho, 3-4 andares", cat: "movel_medio" },
+    { name: "Varal de teto", obs: "Fixado no teto da área de serviço", cat: "utensilio" },
+    { name: "Aspirador vermelho", obs: "", cat: "eletro_pequeno" },
+    { name: "Bacia 1", obs: "", cat: "utensilio" },
+    { name: "Bacia 2", obs: "", cat: "utensilio" },
+    { name: "Bacia 3", obs: "", cat: "utensilio" },
+    { name: "Vassoura", obs: "", cat: "utensilio" },
+    { name: "Rodo", obs: "", cat: "utensilio" },
+  ]},
+  { name: "Roupas Avulsas / Fora do Armário", items: [
+    { name: "Pilha de roupas (bermudas, camisetas, toalhas)", obs: "Sobre colchão — para triagem", cat: "roupa" },
+    { name: "Sacola plástica com roupas", obs: "Conteúdo não identificado", cat: "roupa" },
+    { name: "Roupas na prateleira preta", obs: "Camisetas, calças, itens de academia", cat: "roupa" },
+  ]},
+  { name: "Itens Avulsos", items: [
+    { name: "Colchão solteiro marrom", obs: "", cat: "movel_grande" },
+    { name: "Escada pequena azul", obs: "", cat: "utensilio" },
+    { name: "Mala preta", obs: "", cat: "utensilio" },
+    { name: "Cabides variados", obs: "Metal e plástico, várias cores", cat: "utensilio" },
+    { name: "Caixa/escorregador azul plástico", obs: "", cat: "utensilio" },
+  ]},
+];
+
+// ── STATE ──
+const state = {};
+let currentFilter = 'all';
+let currentSearch = '';
+
+const key = (ri, ii) => `mv_${ri}_${ii}`;
+
+function loadState() {
+  ROOMS.forEach((r, ri) => r.items.forEach((_, ii) => {
+    const k = key(ri, ii);
+    try { state[k] = localStorage.getItem(k) || null; }
+    catch(e) { state[k] = null; }
+  }));
+}
+
+function saveState(k, val) {
+  state[k] = val;
+  try { if (val) localStorage.setItem(k, val); else localStorage.removeItem(k); }
+  catch(e) {}
+}
+
+// ── RENDER ──
+function render() {
+  const container = document.getElementById('main-content');
+  container.innerHTML = '';
+
+  ROOMS.forEach((room, ri) => {
+    const sec = document.createElement('div');
+    sec.className = 'room-section'; sec.id = `room-${ri}`;
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'room-header';
+    hdr.innerHTML = `<span class="room-name">${room.name}</span><span class="room-badge" id="badge-${ri}">${room.items.length}</span>`;
+    sec.appendChild(hdr);
+
+    // Items
+    room.items.forEach((item, ii) => renderCard(sec, ri, ii));
+
+    // Add item button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn-add-item';
+    addBtn.innerHTML = '＋ Adicionar item neste cômodo';
+    addBtn.onclick = () => openAddModal(ri);
+    sec.appendChild(addBtn);
+
+    container.appendChild(sec);
+  });
+
+  // Add new room button
+  const addRoomWrap = document.createElement('div');
+  addRoomWrap.className = 'room-add-section';
+  addRoomWrap.innerHTML = `
+    <button class="btn-add-room" onclick="openAddModal(null)">
+      🏠 Adicionar item em novo cômodo
+    </button>`;
+  container.appendChild(addRoomWrap);
+
+  applyFilter();
+  updateStats();
+  updateMaterials();
+}
+
+function renderCard(container, ri, ii) {
+  const item = ROOMS[ri].items[ii];
+  const k = key(ri, ii);
+  const s = state[k];
+  const card = document.createElement('div');
+  card.className = `item-card${s ? ' status-'+s : ''}`;
+  card.id = `card-${ri}-${ii}`;
+  card.innerHTML = `
+    <div class="item-info">
+      <div class="item-name">${item.name}</div>
+      ${item.obs ? `<div class="item-obs">${item.obs}</div>` : ''}
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+      <div class="status-btns">
+        <button class="sbtn levar     ${s==='levar'?'active':''}"    onclick="setStatus(${ri},${ii},'levar')"     title="Levar">✅</button>
+        <button class="sbtn doar      ${s==='doar'?'active':''}"     onclick="setStatus(${ri},${ii},'doar')"      title="Doação">🎁</button>
+        <button class="sbtn vender    ${s==='vender'?'active':''}"   onclick="setStatus(${ri},${ii},'vender')"    title="Vender">💰</button>
+        <button class="sbtn descartar ${s==='descartar'?'active':''}" onclick="setStatus(${ri},${ii},'descartar')" title="Descartar">🗑️</button>
+      </div>
+      <div class="item-actions">
+        <button class="act-btn edit-btn"   onclick="openEditModal(${ri},${ii})" title="Editar">✏️</button>
+        <button class="act-btn delete-btn" onclick="openDeleteModal(${ri},${ii})" title="Excluir">🗑</button>
+      </div>
+    </div>`;
+  container.appendChild(card);
+}
+
+function setStatus(ri, ii, status) {
+  const k = key(ri, ii);
+  const card = document.getElementById(`card-${ri}-${ii}`);
+  const newVal = state[k] === status ? null : status;
+  saveState(k, newVal);
+  card.className = `item-card${newVal ? ' status-'+newVal : ''}`;
+  card.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+  if (newVal) card.querySelector(`.sbtn.${newVal}`)?.classList.add('active');
+  applyFilter();
+  updateStats();
+  updateMaterials();
+}
+
+function updateStats() {
+  let l=0,d=0,v=0,x=0,p=0;
+  Object.values(state).forEach(s => {
+    if (s==='levar') l++;
+    else if (s==='doar') d++;
+    else if (s==='vender') v++;
+    else if (s==='descartar') x++;
+    else p++;
+  });
+  document.getElementById('cnt-levar').textContent = l;
+  document.getElementById('cnt-doar').textContent = d;
+  document.getElementById('cnt-vender').textContent = v;
+  document.getElementById('cnt-descartar').textContent = x;
+  document.getElementById('cnt-pendente').textContent = p + ' pendentes';
+  const total = l+d+v+x+p;
+  const done = l+d+v+x;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('pct-num').textContent = pct + '%';
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn');
+  const cls = {all:'fa',levar:'fl',doar:'fd',vender:'fv',descartar:'fx',pendente:'fp'};
+  document.getElementById(`f-${f}`).classList.add(cls[f]);
+  applyFilter();
+}
+
+function filterItems() {
+  currentSearch = document.getElementById('search-input').value.toLowerCase();
+  applyFilter();
+}
+
+function applyFilter() {
+  ROOMS.forEach((room, ri) => {
+    let vis = false;
+    room.items.forEach((item, ii) => {
+      const k = key(ri, ii);
+      const card = document.getElementById(`card-${ri}-${ii}`);
+      if (!card) return;
+      const ms = !currentSearch || item.name.toLowerCase().includes(currentSearch) || (item.obs||'').toLowerCase().includes(currentSearch);
+      const mf = currentFilter==='all' || (currentFilter==='pendente' ? !state[k] : state[k]===currentFilter);
+      const show = ms && mf;
+      card.classList.toggle('hidden', !show);
+      if (show) vis = true;
+    });
+    const sec = document.getElementById(`room-${ri}`);
+    if (sec) sec.style.display = vis ? '' : 'none';
+  });
+}
+
+// ── MATERIALS CALCULATOR ──
+const CAT = {
+  movel_grande:   { bs:0,   bm:0,    bl:0,    bolha:0.3,  stretch:0.5, manta:1   },
+  movel_medio:    { bs:0,   bm:0.8,  bl:0,    bolha:0.1,  stretch:0.2, manta:0   },
+  movel_pequeno:  { bs:0.8, bm:0,    bl:0,    bolha:0.1,  stretch:0,   manta:0   },
+  eletro_grande:  { bs:0,   bm:1,    bl:0,    bolha:0.5,  stretch:0.3, manta:0.5 },
+  eletro_pequeno: { bs:0.5, bm:0,    bl:0,    bolha:0.3,  stretch:0,   manta:0   },
+  fragil:         { bs:0.5, bm:0,    bl:0,    bolha:0.6,  stretch:0,   manta:0   },
+  roupa:          { bs:0,   bm:0.25, bl:0.15, bolha:0,    stretch:0,   manta:0   },
+  textil:         { bs:0,   bm:0,    bl:0.4,  bolha:0,    stretch:0,   manta:0   },
+  panela:         { bs:0,   bm:0.3,  bl:0,    bolha:0.1,  stretch:0,   manta:0   },
+  utensilio:      { bs:0.3, bm:0,    bl:0,    bolha:0.05, stretch:0,   manta:0   },
+  livros:         { bs:1.5, bm:0,    bl:0,    bolha:0,    stretch:0,   manta:0   },
+  papel:          { bs:0.5, bm:0,    bl:0,    bolha:0,    stretch:0,   manta:0   },
+  acessorio:      { bs:0.3, bm:0,    bl:0,    bolha:0.1,  stretch:0,   manta:0   },
+};
+
+function updateMaterials() {
+  let t = { bs:0,bm:0,bl:0,bolha:0,stretch:0,manta:0 };
+  let levar=0,doar=0,vender=0,descartar=0,pendente=0;
+  let hasColchao=false, hasLevar=false, rooms_levar=new Set();
+
+  ROOMS.forEach((room, ri) => {
+    room.items.forEach((item, ii) => {
+      const k = key(ri, ii);
+      const s = state[k];
+      if (!s) { pendente++; return; }
+      if (s==='levar') levar++;
+      else if (s==='doar') doar++;
+      else if (s==='vender') vender++;
+      else descartar++;
+      if (s !== 'levar') return;
+      hasLevar = true;
+      rooms_levar.add(ri);
+      if (item.name.toLowerCase().includes('colch')) hasColchao = true;
+      const p = CAT[item.cat] || CAT.utensilio;
+      Object.keys(t).forEach(k2 => { t[k2] += p[k2]||0; });
+    });
+  });
+
+  document.getElementById('m-levar').textContent = levar;
+  document.getElementById('m-doar').textContent = doar;
+  document.getElementById('m-vender').textContent = vender;
+  document.getElementById('m-descartar').textContent = descartar;
+  document.getElementById('pending-notice').style.display = pendente > 0 ? '' : 'none';
+
+  const ids = ['box-s','box-m','box-l','box-total','bolha','kraft','stretch','fita','capa-colchao','manta','bag','fita-cor'];
+  if (!hasLevar) { ids.forEach(id => { const el=document.getElementById(id); if(el) el.textContent='—'; }); return; }
+
+  const bs = Math.max(1, Math.ceil(t.bs));
+  const bm = Math.max(1, Math.ceil(t.bm));
+  const bl = Math.max(1, Math.ceil(t.bl));
+  const total = Math.ceil((bs+bm+bl)*1.2);
+  const bolha = Math.max(1, Math.ceil(t.bolha/8));
+  const kraft = Math.max(1, Math.ceil(bm/5));
+  const stretch = Math.max(1, Math.ceil(t.stretch/2));
+  const fita = Math.max(2, Math.ceil((bs+bm+bl)/5));
+  const fitaCor = Math.min(rooms_levar.size, 8);
+  const manta = Math.max(2, Math.ceil(t.manta));
+  const bag = Math.max(1, Math.ceil(bl/2));
+
+  document.getElementById('box-s').textContent = bs;
+  document.getElementById('box-m').textContent = bm;
+  document.getElementById('box-l').textContent = bl;
+  document.getElementById('box-total').textContent = total;
+  document.getElementById('bolha').textContent = bolha;
+  document.getElementById('kraft').textContent = kraft;
+  document.getElementById('stretch').textContent = stretch;
+  document.getElementById('fita').textContent = fita;
+  document.getElementById('fita-cor').textContent = fitaCor;
+  document.getElementById('capa-colchao').textContent = hasColchao ? 1 : '—';
+  document.getElementById('manta').textContent = manta;
+  document.getElementById('bag').textContent = bag;
+  renderCustomBoxes();
+}
+
+
+// ── BUILD REPORT ──
+function buildReport() {
+  // Stats
+  let l=0,d=0,v=0,x=0;
+  Object.values(state).forEach(s => {
+    if(s==='levar') l++; else if(s==='doar') d++;
+    else if(s==='vender') v++; else if(s==='descartar') x++;
+  });
+  document.getElementById('r-levar').textContent = l;
+  document.getElementById('r-vender').textContent = v;
+  document.getElementById('r-doar').textContent = d;
+  document.getElementById('r-descartar').textContent = x;
+  document.getElementById('r-data').textContent = new Date().toLocaleString('pt-BR');
+
+  // Group items by status
+  const groups = { levar:[], doar:[], vender:[], descartar:[] };
+  const labels = { levar:'✅ Levar', doar:'🎁 Doação', vender:'💰 Vender', descartar:'🗑️ Descartar' };
+  ROOMS.forEach((room, ri) => {
+    room.items.forEach((item, ii) => {
+      const s = state[key(ri, ii)];
+      if (s && groups[s]) groups[s].push({ room: room.name, name: item.name, obs: item.obs });
+    });
+  });
+
+  const container = document.getElementById('rel-itens');
+  container.innerHTML = '';
+  Object.entries(groups).forEach(([status, items]) => {
+    if (!items.length) return;
+    const sec = document.createElement('div');
+    sec.className = 'rel-section';
+    sec.innerHTML = `<h3>${labels[status]} — ${items.length} item(s)</h3>`;
+    let lastRoom = '';
+    items.forEach(item => {
+      if (item.room !== lastRoom) {
+        const rh = document.createElement('div');
+        rh.style.cssText = 'font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:6px 0 3px;';
+        rh.textContent = item.room;
+        sec.appendChild(rh);
+        lastRoom = item.room;
+      }
+      const row = document.createElement('div');
+      row.className = 'rel-item';
+      row.innerHTML = `<span class="rel-badge ${status}">${status}</span><span>${item.name}${item.obs ? '<br><span style="font-size:0.7rem;color:var(--muted);font-style:italic">'+item.obs+'</span>' : ''}</span>`;
+      sec.appendChild(row);
+    });
+    container.appendChild(sec);
+  });
+
+  // Mirror materials — first report
+  const mirrorIds = [
+    ['box-s','r-box-s'],['box-m','r-box-m'],['box-l','r-box-l'],
+    ['box-total','r-box-total'],['bolha','r-bolha'],['kraft','r-kraft'],
+    ['stretch','r-stretch'],['fita','r-fita'],['fita-cor','r-fita-cor'],
+    ['capa-colchao','r-capa'],['manta','r-manta'],['bag','r-bag'],
+  ];
+  mirrorIds.forEach(([src,dst]) => {
+    const el = document.getElementById(src);
+    const dest = document.getElementById(dst);
+    if (el && dest) {
+      const val = el.textContent;
+      const unit = src.includes('bolha') ? ' rolos' : src.includes('stretch') ? ' rolos' : src.includes('fita-cor') ? ' cores' : src.includes('kraft') ? ' pac.' : src.includes('manta') ? ' peças' : src.includes('bag') ? ' unid.' : src.includes('capa') ? '' : ' unid.';
+      dest.textContent = val === '—' ? '—' : val + unit;
+    }
+  });
+
+  // Mirror other materials to second report
+  const mirror2 = [
+    ['bolha','r-bolha2'],['kraft','r-kraft2'],['stretch','r-stretch2'],
+    ['fita','r-fita2'],['fita-cor','r-fita-cor2'],
+    ['capa-colchao','r-capa2'],['manta','r-manta2'],['bag','r-bag2'],
+  ];
+  mirror2.forEach(([src,dst]) => {
+    const el = document.getElementById(src);
+    const dest = document.getElementById(dst);
+    if (el && dest) {
+      const val = el.textContent;
+      const unit = src.includes('bolha') ? ' rolos' : src.includes('stretch') ? ' rolos' : src.includes('fita-cor') ? ' cores' : src.includes('kraft') ? ' pac.' : src.includes('manta') ? ' peças' : src.includes('bag') ? ' unid.' : src.includes('capa') ? '' : ' unid.';
+      dest.textContent = val === '—' ? '—' : val + unit;
+    }
+  });
+
+  // Build second report — custom boxes
+  const totalVol = getTotalVolumeLiters();
+  const noCustomEl = document.getElementById('rel-no-custom');
+  const customListEl = document.getElementById('rel-custom-boxes-list');
+  customListEl.innerHTML = '';
+
+  if (customBoxes.length === 0) {
+    noCustomEl.style.display = '';
+  } else {
+    noCustomEl.style.display = 'none';
+    // Summary card per custom box
+    customBoxes.forEach(box => {
+      const volLiters = (box.c * box.l * box.a) / 1000;
+      const needed = totalVol > 0 ? Math.ceil((totalVol / volLiters) * 1.2) : '?';
+      const sec = document.createElement('div');
+      sec.className = 'rel-section';
+      sec.style.marginBottom = '10px';
+      sec.innerHTML = \`
+        <h3>📐 \${box.name} — \${box.c}×\${box.l}×\${box.a} cm</h3>
+        <div class="rel-mat-item">
+          <span>Volume da caixa</span>
+          <span class="rel-mat-qty">\${volLiters.toFixed(1)} L</span>
+        </div>
+        <div class="rel-mat-item">
+          <span>Volume total estimado (itens a levar)</span>
+          <span class="rel-mat-qty">\${totalVol.toFixed(0)} L</span>
+        </div>
+        <div class="rel-total" style="margin-top:10px;">
+          <span class="tl">Quantidade necessária (+20% segurança)</span>
+          <span class="tv">\${needed} unid.</span>
+        </div>
+      \`;
+      customListEl.appendChild(sec);
+    });
+  }
+}
+
+function shareReport() {
+  let text = 'RELATÓRIO DE MUDANÇA\n';
+  text += new Date().toLocaleString('pt-BR') + '\n\n';
+  const groups = { levar:[], doar:[], vender:[], descartar:[] };
+  const labels = { levar:'✅ LEVAR', doar:'🎁 DOAÇÃO', vender:'💰 VENDER', descartar:'🗑️ DESCARTAR' };
+  ROOMS.forEach((room, ri) => {
+    room.items.forEach((item, ii) => {
+      const s = state[key(ri, ii)];
+      if (s && groups[s]) groups[s].push(room.name + ': ' + item.name);
+    });
+  });
+  Object.entries(groups).forEach(([status, items]) => {
+    if (!items.length) return;
+    text += labels[status] + ' (' + items.length + ')\n';
+    items.forEach(i => text += '  • ' + i + '\n');
+    text += '\n';
+  });
+  text += '──────────────\nMATERIAIS:\n';
+  [['box-s','Cx. Pequena'],['box-m','Cx. Média'],['box-l','Cx. Grande'],
+   ['box-total','TOTAL CAIXAS'],['bolha','Papel Bolha'],['kraft','Kraft/Jornal'],
+   ['stretch','Stretch'],['fita','Fita Adesiva'],['manta','Mantas'],['bag','Bags']
+  ].forEach(([id, label]) => {
+    const el = document.getElementById(id);
+    if (el && el.textContent !== '—') text += label + ': ' + el.textContent + '\n';
+  });
+  if (navigator.share) {
+    navigator.share({ title: 'Triagem Mudança', text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('Copiado! Cole onde quiser.'));
+  }
+}
+
+// ── TAB SWITCHING ──
+function showTab(tab) {
+  ['triagem','materiais','relatorio'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', tab===t);
+    const pg = document.getElementById('page-'+t);
+    if (pg) pg.style.display = tab===t ? 'flex' : 'none';
+  });
+  if (tab==='materiais') updateMaterials();
+  if (tab==='relatorio') { updateMaterials(); buildReport(); }
+}
+
+
+// ── CUSTOM BOX CALCULATOR ──
+// Total volume needed in liters (estimated from item categories)
+// We'll compute this dynamically based on what's marked LEVAR
+// Volume reference per category (liters):
+const CAT_VOL = {
+  movel_grande:   0,    // moved as-is, not boxed
+  movel_medio:    0,
+  movel_pequeno:  15,
+  eletro_grande:  0,
+  eletro_pequeno: 8,
+  fragil:         5,
+  roupa:          12,
+  textil:         20,
+  panela:         10,
+  utensilio:      6,
+  livros:         8,
+  papel:          5,
+  acessorio:      4,
+};
+
+let customBoxes = [];
+try { customBoxes = JSON.parse(localStorage.getItem('customBoxes') || '[]'); } catch(e) { customBoxes = []; }
+
+function saveCustomBoxes() {
+  try { localStorage.setItem('customBoxes', JSON.stringify(customBoxes)); } catch(e) {}
+}
+
+function getTotalVolumeLiters() {
+  let vol = 0;
+  ROOMS.forEach((room, ri) => {
+    room.items.forEach((item, ii) => {
+      const k = key(ri, ii);
+      if (state[k] !== 'levar') return;
+      vol += CAT_VOL[item.cat] || 0;
+    });
+  });
+  return vol;
+}
+
+function previewCustomBox() {
+  const c = parseFloat(document.getElementById('cbox-c').value);
+  const l = parseFloat(document.getElementById('cbox-l').value);
+  const a = parseFloat(document.getElementById('cbox-a').value);
+  const preview = document.getElementById('cbox-preview');
+  if (!c || !l || !a) { preview.style.display = 'none'; return; }
+  const volLiters = (c * l * a) / 1000;
+  const totalVol = getTotalVolumeLiters();
+  const needed = totalVol > 0 ? Math.ceil((totalVol / volLiters) * 1.2) : '—';
+  document.getElementById('cbox-vol-preview').textContent = volLiters.toFixed(1);
+  document.getElementById('cbox-qty-preview').textContent = needed;
+  preview.style.display = '';
+}
+
+function addCustomBox() {
+  const name = document.getElementById('cbox-name').value.trim() || 'Caixa personalizada';
+  const c = parseFloat(document.getElementById('cbox-c').value);
+  const l = parseFloat(document.getElementById('cbox-l').value);
+  const a = parseFloat(document.getElementById('cbox-a').value);
+  if (!c || !l || !a) { alert('Preencha comprimento, largura e altura!'); return; }
+  customBoxes.push({ id: Date.now(), name, c, l, a });
+  saveCustomBoxes();
+  // Clear inputs
+  document.getElementById('cbox-name').value = '';
+  document.getElementById('cbox-c').value = '';
+  document.getElementById('cbox-l').value = '';
+  document.getElementById('cbox-a').value = '';
+  document.getElementById('cbox-preview').style.display = 'none';
+  renderCustomBoxes();
+}
+
+function removeCustomBox(id) {
+  customBoxes = customBoxes.filter(b => b.id !== id);
+  saveCustomBoxes();
+  renderCustomBoxes();
+}
+
+function renderCustomBoxes() {
+  const container = document.getElementById('custom-boxes-list');
+  const noMsg = document.getElementById('no-custom-msg');
+  const totalVol = getTotalVolumeLiters();
+
+  // Remove old cards (keep no-custom-msg)
+  container.querySelectorAll('.custom-box-card').forEach(el => el.remove());
+
+  if (customBoxes.length === 0) {
+    noMsg.style.display = '';
+    return;
+  }
+  noMsg.style.display = 'none';
+
+  customBoxes.forEach(box => {
+    const volLiters = (box.c * box.l * box.a) / 1000;
+    const needed = totalVol > 0 ? Math.ceil((totalVol / volLiters) * 1.2) : '?';
+    const card = document.createElement('div');
+    card.className = 'custom-box-card';
+    card.innerHTML = `
+      <div class="custom-box-header">
+        <span class="custom-box-name">${box.name}</span>
+        <span class="custom-box-dims">${box.c}×${box.l}×${box.a} cm</span>
+        <button class="btn-remove-box" onclick="removeCustomBox(${box.id})" title="Remover">✕</button>
+      </div>
+      <div class="custom-box-result">
+        <div>
+          <div class="label">Quantidade necessária</div>
+          <div class="cbox-vol-note">Vol. da caixa: ${volLiters.toFixed(1)}L &nbsp;·&nbsp; Vol. total estimado: ${totalVol.toFixed(0)}L</div>
+        </div>
+        <div style="text-align:right">
+          <div class="count">${needed}</div>
+          <div class="count-unit">unidades</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+
+// ── EDIT / ADD / DELETE LOGIC ──
+let modalMode = null; // 'edit' or 'add'
+let modalRi = null;
+let modalIi = null;
+let deleteRi = null;
+let deleteIi = null;
+
+function populateRoomSelect(selectedRi) {
+  const sel = document.getElementById('modal-room');
+  sel.innerHTML = '';
+  ROOMS.forEach((room, ri) => {
+    const opt = document.createElement('option');
+    opt.value = ri;
+    opt.textContent = room.name;
+    if (ri === selectedRi) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Option to create new room
+  const newOpt = document.createElement('option');
+  newOpt.value = 'new';
+  newOpt.textContent = '➕ Novo cômodo...';
+  sel.appendChild(newOpt);
+}
+
+function openEditModal(ri, ii) {
+  const item = ROOMS[ri].items[ii];
+  modalMode = 'edit'; modalRi = ri; modalIi = ii;
+  document.getElementById('modal-title').textContent = '✏️ Editar Item';
+  document.getElementById('modal-name').value = item.name;
+  document.getElementById('modal-obs').value = item.obs || '';
+  document.getElementById('modal-cat').value = item.cat || 'utensilio';
+  document.getElementById('modal-confirm-btn').textContent = 'Salvar alterações';
+  document.getElementById('modal-confirm-btn').className = 'btn-modal-confirm';
+  populateRoomSelect(ri);
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('modal-name').focus();
+}
+
+function openAddModal(ri) {
+  modalMode = 'add'; modalRi = ri; modalIi = null;
+  document.getElementById('modal-title').textContent = '➕ Adicionar Item';
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-obs').value = '';
+  document.getElementById('modal-cat').value = 'utensilio';
+  document.getElementById('modal-confirm-btn').textContent = 'Adicionar item';
+  document.getElementById('modal-confirm-btn').className = 'btn-modal-confirm';
+  populateRoomSelect(ri !== null ? ri : 0);
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('modal-name').focus();
+}
+
+function closeModal() {
+  document.getElementById('item-modal').classList.remove('open');
+}
+
+function confirmModal() {
+  const name = document.getElementById('modal-name').value.trim();
+  if (!name) { document.getElementById('modal-name').style.borderColor = 'var(--doar)'; return; }
+  document.getElementById('modal-name').style.borderColor = '';
+  const obs  = document.getElementById('modal-obs').value.trim();
+  const cat  = document.getElementById('modal-cat').value;
+  let targetRi = parseInt(document.getElementById('modal-room').value);
+
+  // Handle new room
+  if (isNaN(targetRi)) {
+    const roomName = prompt('Nome do novo cômodo:');
+    if (!roomName) return;
+    ROOMS.push({ name: roomName.trim(), items: [] });
+    targetRi = ROOMS.length - 1;
+    saveRooms();
+  }
+
+  if (modalMode === 'edit') {
+    const oldRi = modalRi;
+    const item = ROOMS[oldRi].items[modalIi];
+    // If room changed, move item
+    if (targetRi !== oldRi) {
+      ROOMS[oldRi].items.splice(modalIi, 1);
+      ROOMS[targetRi].items.push({ name, obs, cat });
+      // Clear old state key
+      const oldKey = key(oldRi, modalIi);
+      saveState(oldKey, null);
+      rebuildStateKeys();
+    } else {
+      item.name = name; item.obs = obs; item.cat = cat;
+    }
+  } else {
+    ROOMS[targetRi].items.push({ name, obs, cat });
+  }
+
+  saveRooms();
+  closeModal();
+  rebuildStateKeys();
+  render();
+}
+
+function openDeleteModal(ri, ii) {
+  deleteRi = ri; deleteIi = ii;
+  document.getElementById('delete-modal-msg').textContent =
+    `"${ROOMS[ri].items[ii].name}" será removido permanentemente da lista.`;
+  document.getElementById('delete-modal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('open');
+}
+
+function confirmDelete() {
+  const k = key(deleteRi, deleteIi);
+  saveState(k, null);
+  ROOMS[deleteRi].items.splice(deleteIi, 1);
+  saveRooms();
+  closeDeleteModal();
+  rebuildStateKeys();
+  render();
+}
+
+// Rebuild state keys after structural changes
+function rebuildStateKeys() {
+  // Clear all state entries and reload from scratch
+  const oldState = {...state};
+  Object.keys(state).forEach(k => delete state[k]);
+  ROOMS.forEach((r, ri) => {
+    r.items.forEach((_, ii) => {
+      const k = key(ri, ii);
+      state[k] = null; // default
+    });
+  });
+  // Best-effort: re-match by position (not perfect but workable)
+}
+
+// Persist custom room/item changes to localStorage
+function saveRooms() {
+  try {
+    const custom = ROOMS.map(r => ({ name: r.name, items: r.items }));
+    localStorage.setItem('customRooms', JSON.stringify(custom));
+  } catch(e) {}
+}
+
+function loadRooms() {
+  try {
+    const saved = localStorage.getItem('customRooms');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Replace ROOMS contents in-place
+      ROOMS.length = 0;
+      parsed.forEach(r => ROOMS.push(r));
+    }
+  } catch(e) {}
+}
+
+// Close modals on overlay click
+document.getElementById('item-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+// ── INIT ──
+loadState();
+render();
+</script>
+
+<!-- ══ RELATORIO PAGE ══ -->
+<div id="page-relatorio" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+  <div class="scroll-area"><div class="rel-wrap">
+
+    <div class="rel-hero">
+      <h2>🖨️ Relatório Completo</h2>
+      <p>Lista de itens + materiais. Use os botões abaixo para imprimir ou salvar como PDF.</p>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar como PDF</button>
+    <button class="btn-print orange" onclick="shareReport()">📤 Compartilhar texto</button>
+
+    <!-- RESUMO ESTATÍSTICO -->
+    <div class="rel-stats">
+      <div class="rel-stat levar">   <div class="n" id="r-levar">0</div>   <div class="l">Levar</div></div>
+      <div class="rel-stat vender">  <div class="n" id="r-vender">0</div>  <div class="l">Vender</div></div>
+      <div class="rel-stat doar">    <div class="n" id="r-doar">0</div>    <div class="l">Doação</div></div>
+      <div class="rel-stat descartar"><div class="n" id="r-descartar">0</div><div class="l">Descartar</div></div>
+    </div>
+
+    <!-- ITENS POR STATUS -->
+    <div id="rel-itens"></div>
+
+    <!-- MATERIAIS -->
+    <div class="rel-section">
+      <h3>📦 Materiais Necessários (baseado no que vai)</h3>
+      <div class="rel-mat-item"><span>Caixa Pequena (30×25×25 cm)</span><span class="rel-mat-qty" id="r-box-s">—</span></div>
+      <div class="rel-mat-item"><span>Caixa Média (50×35×35 cm)</span><span class="rel-mat-qty" id="r-box-m">—</span></div>
+      <div class="rel-mat-item"><span>Caixa Grande (60×40×40 cm)</span><span class="rel-mat-qty" id="r-box-l">—</span></div>
+      <div class="rel-mat-item"><span>Papel Bolha</span><span class="rel-mat-qty" id="r-bolha">—</span></div>
+      <div class="rel-mat-item"><span>Papel Kraft / Jornal</span><span class="rel-mat-qty" id="r-kraft">—</span></div>
+      <div class="rel-mat-item"><span>Plástico Stretch (filme)</span><span class="rel-mat-qty" id="r-stretch">—</span></div>
+      <div class="rel-mat-item"><span>Fita Adesiva Larga (48mm)</span><span class="rel-mat-qty" id="r-fita">—</span></div>
+      <div class="rel-mat-item"><span>Caneta Permanente</span><span class="rel-mat-qty">2 unid.</span></div>
+      <div class="rel-mat-item"><span>Fita Colorida por Cômodo</span><span class="rel-mat-qty" id="r-fita-cor">—</span></div>
+      <div class="rel-mat-item"><span>Capa para Colchão</span><span class="rel-mat-qty" id="r-capa">—</span></div>
+      <div class="rel-mat-item"><span>Manta Acolchoada / Cobertor Velho</span><span class="rel-mat-qty" id="r-manta">—</span></div>
+      <div class="rel-mat-item"><span>Bag / Saco de Lona Grande</span><span class="rel-mat-qty" id="r-bag">—</span></div>
+      <div class="rel-total"><span class="tl">Total de caixas (+20% segurança)</span><span class="tv" id="r-box-total">—</span></div>
+    </div>
+
+    <!-- ── SEGUNDO RELATÓRIO: CAIXAS PERSONALIZADAS ── -->
+    <div style="background:var(--navy);border-radius:14px;padding:16px;margin:20px 0 14px;color:white;">
+      <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:3px;">📐 Relatório com Caixas Personalizadas</div>
+      <div style="font-size:0.72rem;opacity:0.7;">Mesmo cálculo usando as caixas que você definiu</div>
+    </div>
+
+    <div id="rel-custom-boxes-section">
+      <div id="rel-no-custom" style="background:white;border-radius:12px;padding:16px;text-align:center;color:var(--muted);font-size:0.8rem;font-style:italic;margin-bottom:12px;">
+        Nenhuma caixa personalizada definida ainda.<br>
+        <span style="font-size:0.72rem;">Vá em 📦 Materiais → Sua Caixa Personalizada para adicionar.</span>
+      </div>
+      <div id="rel-custom-boxes-list"></div>
+    </div>
+
+    <!-- DEMAIS MATERIAIS (compartilhados pelos dois relatórios) -->
+    <div class="rel-section" style="margin-top:4px;">
+      <h3>🫧 Demais Materiais (igual nos dois relatórios)</h3>
+      <div class="rel-mat-item"><span>Papel Bolha</span><span class="rel-mat-qty" id="r-bolha2">—</span></div>
+      <div class="rel-mat-item"><span>Papel Kraft / Jornal</span><span class="rel-mat-qty" id="r-kraft2">—</span></div>
+      <div class="rel-mat-item"><span>Plástico Stretch (filme)</span><span class="rel-mat-qty" id="r-stretch2">—</span></div>
+      <div class="rel-mat-item"><span>Fita Adesiva Larga (48mm)</span><span class="rel-mat-qty" id="r-fita2">—</span></div>
+      <div class="rel-mat-item"><span>Caneta Permanente</span><span class="rel-mat-qty">2 unid.</span></div>
+      <div class="rel-mat-item"><span>Fita Colorida por Cômodo</span><span class="rel-mat-qty" id="r-fita-cor2">—</span></div>
+      <div class="rel-mat-item"><span>Capa para Colchão</span><span class="rel-mat-qty" id="r-capa2">—</span></div>
+      <div class="rel-mat-item"><span>Manta Acolchoada / Cobertor Velho</span><span class="rel-mat-qty" id="r-manta2">—</span></div>
+      <div class="rel-mat-item"><span>Bag / Saco de Lona Grande</span><span class="rel-mat-qty" id="r-bag2">—</span></div>
+    </div>
+
+    <div style="font-size:0.7rem;color:var(--muted);text-align:center;padding-bottom:20px">
+      Gerado em: <span id="r-data"></span>
+    </div>
+
+  </div></div>
+</div>
+
+
+<!-- ── EDIT/ADD MODAL ── -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal-sheet">
+    <h2 id="modal-title">Editar Item</h2>
+    <div class="modal-field">
+      <label>Nome do item</label>
+      <input type="text" id="modal-name" placeholder="Ex: Sofá cinza">
+    </div>
+    <div class="modal-field">
+      <label>Observação (opcional)</label>
+      <input type="text" id="modal-obs" placeholder="Ex: 2 lugares, retrátil">
+    </div>
+    <div class="modal-field">
+      <label>Cômodo</label>
+      <select id="modal-room"></select>
+    </div>
+    <div class="modal-field">
+      <label>Categoria (para cálculo de materiais)</label>
+      <select id="modal-cat">
+        <option value="movel_grande">Móvel grande (sofá, cama, guarda-roupa)</option>
+        <option value="movel_medio">Móvel médio (cadeira, estante, criado-mudo)</option>
+        <option value="movel_pequeno">Móvel pequeno (mesa de apoio, banquinho)</option>
+        <option value="eletro_grande">Eletro grande (geladeira, fogão, TV)</option>
+        <option value="eletro_pequeno">Eletro pequeno (cafeteira, ferro, ventilador)</option>
+        <option value="fragil">Frágil (vidro, quadro, espelho, vaso)</option>
+        <option value="roupa">Roupas</option>
+        <option value="textil">Têxtil (toalha, lençol, cobertor)</option>
+        <option value="panela">Panela / frigideira</option>
+        <option value="utensilio">Utensílio geral</option>
+        <option value="livros">Livros</option>
+        <option value="papel">Documentos / papel</option>
+        <option value="acessorio">Acessório</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-confirm" id="modal-confirm-btn" onclick="confirmModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-sheet">
+    <h2>Excluir item?</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;" id="delete-modal-msg"></p>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="btn-modal-confirm danger" onclick="confirmDelete()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
